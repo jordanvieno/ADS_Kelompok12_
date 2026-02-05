@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Facility } from '../types';
@@ -17,7 +18,7 @@ export const BookingForm: React.FC = () => {
     date: '',
     startTime: '',
     endTime: '',
-    attendees: '' as string | number, // Changed to allow empty string for better UX
+    attendees: '' as string | number,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,27 +52,17 @@ export const BookingForm: React.FC = () => {
     setError(null);
     setIsSubmitting(true);
 
-    const startDateTime = `${formData.date}T${formData.startTime}:00`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00`;
-    
-    // Explicitly parse attendees as integer base 10 to prevent any off-by-one or type issues
-    const attendeesCount = parseInt(formData.attendees.toString(), 10);
-
-    if (isNaN(attendeesCount) || attendeesCount <= 0) {
-        setError("Jumlah peserta tidak valid.");
-        setIsSubmitting(false);
-        return;
-    }
-
-    // Call "Backend" Service with Real User ID
+    // Architectural Constraint: Logic removed from Controller/View.
+    // We pass the raw DTO to the Service Layer which handles Validation & Construction via Domain Class.
     const result = await BookingService.createBooking({
         facilityId: facility.id,
-        userId: user.id, 
+        userId: user.id,
         eventName: formData.eventName,
         eventDescription: formData.eventDescription,
-        startTime: startDateTime,
-        endTime: endDateTime,
-        attendees: attendeesCount
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        attendees: formData.attendees
     });
 
     setIsSubmitting(false);

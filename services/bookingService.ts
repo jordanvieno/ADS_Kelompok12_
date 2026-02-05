@@ -1,7 +1,8 @@
-import { Booking, BookingStatus, ServiceResponse } from '../types';
+
+import { Booking, BookingStatus, ServiceResponse, BookingRequestDTO } from '../types';
 import { AuthService } from './authService';
 
-// In-memory store with some initial dummy data to simulate an existing queue
+// In-memory store
 let bookingsStore: Booking[] = [
   {
     id: 'mock-q1',
@@ -35,57 +36,115 @@ let bookingsStore: Booking[] = [
   }
 ];
 
-export class BookingService {
+// --- DOMAIN LAYER ---
+// Encapsulates business rules, validation, and transformations
+class BookingDomain {
   
-  static async createBooking(bookingRequest: Omit<Booking, 'id' | 'status' | 'createdAt'>): Promise<ServiceResponse<Booking>> {
-    // Domain Logic Simulation
+  static validateRequest(dto: BookingRequestDTO): { valid: boolean; error?: string; parsedData?: any } {
+    const attendees = parseInt(dto.attendees.toString(), 10);
     
-    // 1. Validation
-    const start = new Date(bookingRequest.startTime);
-    const end = new Date(bookingRequest.endTime);
-
-    if (start >= end) {
-      return { success: false, error: "Waktu selesai harus setelah waktu mulai." };
+    if (isNaN(attendees) || attendees <= 0) {
+      return { valid: false, error: "Jumlah peserta tidak valid." };
     }
 
-    if (start < new Date()) {
-        return { success: false, error: "Tidak dapat meminjam untuk waktu yang sudah lewat." };
+    const startDateTime = new Date(`${dto.date}T${dto.startTime}:00`);
+    const endDateTime = new Date(`${dto.date}T${dto.endTime}:00`);
+
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+        return { valid: false, error: "Format tanggal atau waktu salah." };
     }
 
-    // 2. Conflict Check
-    const hasConflict = bookingsStore.some(b => 
-      b.facilityId === bookingRequest.facilityId &&
+    if (startDateTime >= endDateTime) {
+      return { valid: false, error: "Waktu selesai harus setelah waktu mulai." };
+    }
+
+    if (startDateTime < new Date()) {
+        return { valid: false, error: "Tidak dapat meminjam untuk waktu yang sudah lewat." };
+    }
+
+    return { 
+        valid: true, 
+        parsedData: { 
+            startDateTime: startDateTime.toISOString(), 
+            endDateTime: endDateTime.toISOString(),
+            attendees
+        } 
+    };
+  }
+
+  static checkConflicts(facilityId: string, start: string, end: string, existingBookings: Booking[]): boolean {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    return existingBookings.some(b => 
+      b.facilityId === facilityId &&
       b.status !== BookingStatus.REJECTED &&
       b.status !== BookingStatus.COMPLETED &&
       (
-        (start >= new Date(b.startTime) && start < new Date(b.endTime)) ||
-        (end > new Date(b.startTime) && end <= new Date(b.endTime))
+        (startDate >= new Date(b.startTime) && startDate < new Date(b.endTime)) ||
+        (endDate > new Date(b.startTime) && endDate <= new Date(b.endTime))
       )
     );
+  }
 
+  static calculateQueueStatus(booking: Booking, allPending: Booking[]): Booking {
+    if (booking.status !== BookingStatus.PENDING) return booking;
+
+    const position = allPending.findIndex(pb => pb.id === booking.id) + 1;
+    // Business Rule: Estimation is 30 mins per item in queue
+    const processingTimePerItem = 30 * 60 * 1000; 
+    const estimatedTime = new Date(Date.now() + (position * processingTimePerItem));
+    
+    return {
+        ...booking,
+        queuePosition: position,
+        estimatedConfirmationDate: estimatedTime.toISOString()
+    };
+  }
+}
+
+// --- SERVICE LAYER ---
+// Coordinates data persistence and calls Domain Logic
+export class BookingService {
+  
+  static async createBooking(dto: BookingRequestDTO): Promise<ServiceResponse<Booking>> {
+    // 1. Delegate Validation to Domain
+    const validation = BookingDomain.validateRequest(dto);
+    if (!validation.valid) {
+        return { success: false, error: validation.error };
+    }
+
+    const { startDateTime, endDateTime, attendees } = validation.parsedData;
+
+    // 2. Delegate Conflict Check to Domain
+    const hasConflict = BookingDomain.checkConflicts(dto.facilityId, startDateTime, endDateTime, bookingsStore);
     if (hasConflict) {
       return { success: false, error: "Fasilitas sudah dipesan pada jam tersebut." };
     }
 
-    // Get User Details for the record
-    const user = AuthService.getUserById(bookingRequest.userId);
+    // 3. Data Retrieval (Infrastructure concern)
+    const user = AuthService.getUserById(dto.userId);
 
-    // 3. Creation
+    // 4. Object Construction
     const newBooking: Booking = {
-      ...bookingRequest,
       id: Math.random().toString(36).substr(2, 9),
-      status: BookingStatus.PENDING,
+      facilityId: dto.facilityId,
+      userId: dto.userId,
       userName: user ? user.name : 'Unknown',
+      eventName: dto.eventName,
+      eventDescription: dto.eventDescription,
+      startTime: startDateTime,
+      endTime: endDateTime,
+      attendees: attendees,
+      status: BookingStatus.PENDING,
       createdAt: new Date().toISOString(),
-      // Initial placeholders, will be calculated dynamically in getUserBookings
       queuePosition: 0, 
       estimatedConfirmationDate: new Date().toISOString()
     };
 
     bookingsStore.push(newBooking);
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise(resolve => setTimeout(resolve, 600)); // Simulate DB latency
 
     return { success: true, data: newBooking };
   }
@@ -93,41 +152,25 @@ export class BookingService {
   static async getUserBookings(userId: string): Promise<ServiceResponse<Booking[]>> {
     await new Promise(resolve => setTimeout(resolve, 400));
     
-    // 1. Calculate global queue for PENDING items (FIFO)
     const pendingBookings = bookingsStore
         .filter(b => b.status === BookingStatus.PENDING)
         .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-    // 2. Map user bookings and inject dynamic queue status
+    // Use Domain Logic to enrich data
     const userBookings = bookingsStore
         .filter(b => b.userId === userId)
-        .map(booking => {
-            if (booking.status === BookingStatus.PENDING) {
-                const position = pendingBookings.findIndex(pb => pb.id === booking.id) + 1;
-                const processingTimePerItem = 30 * 60 * 1000; 
-                const estimatedTime = new Date(Date.now() + (position * processingTimePerItem));
-                
-                return {
-                    ...booking,
-                    queuePosition: position,
-                    estimatedConfirmationDate: estimatedTime.toISOString()
-                };
-            }
-            return booking;
-        })
+        .map(booking => BookingDomain.calculateQueueStatus(booking, pendingBookings))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return { success: true, data: userBookings };
   }
 
-  // Method for Admins to see all bookings
   static async getAllBookings(): Promise<ServiceResponse<Booking[]>> {
     await new Promise(resolve => setTimeout(resolve, 400));
     const allBookings = bookingsStore.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return { success: true, data: allBookings };
   }
 
-  // NEW: Update Booking Status
   static async updateBookingStatus(bookingId: string, status: BookingStatus): Promise<ServiceResponse<Booking>> {
     await new Promise(resolve => setTimeout(resolve, 500));
     const index = bookingsStore.findIndex(b => b.id === bookingId);

@@ -1,3 +1,4 @@
+
 // Domain Entities
 
 export enum FacilityType {
@@ -52,6 +53,18 @@ export interface Booking {
   // New fields for Queue Transparency
   queuePosition?: number;
   estimatedConfirmationDate?: string;
+}
+
+// DTO for Form Submission (Separates UI from Domain)
+export interface BookingRequestDTO {
+  facilityId: string;
+  userId: string;
+  eventName: string;
+  eventDescription: string;
+  date: string;       // Raw date string from input
+  startTime: string;  // Raw time string from input
+  endTime: string;    // Raw time string from input
+  attendees: string | number; // Raw input
 }
 
 // Service Response Types
