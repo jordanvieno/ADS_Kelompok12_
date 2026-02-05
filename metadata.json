@@ -1,0 +1,7 @@
+{
+  "name": "IPB Facility Booking (Sipinjampas)",
+  "description": "A modern web application for booking facilities at IPB University, featuring AI-powered venue recommendations and smart scheduling assistance.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
