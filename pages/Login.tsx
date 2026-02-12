@@ -42,10 +42,10 @@ export const Login: React.FC = () => {
             </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
-          Masuk ke Sipinjampas
+          Masuk ke TLS IPB
         </h2>
         <p className="mt-2 text-center text-sm text-slate-600 font-medium">
-          Sistem Peminjaman Fasilitas IPB University
+          Tools Lab Sharing IPB University
         </p>
       </div>
 

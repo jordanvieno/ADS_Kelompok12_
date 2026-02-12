@@ -41,8 +41,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <University className="h-6 w-6 text-ipb-blue" />
                 </div>
                 <div className="hidden md:block">
-                    <span className="text-white font-extrabold text-xl tracking-tight block leading-none group-hover:text-ipb-accent transition-colors">SIPINJAMPAS</span>
-                    <span className="text-blue-200 text-xs font-semibold tracking-wider block leading-none mt-1">IPB UNIVERSITY</span>
+                    <span className="text-white font-extrabold text-xl tracking-tight block leading-none group-hover:text-ipb-accent transition-colors">TLS IPB</span>
+                    <span className="text-blue-200 text-xs font-semibold tracking-wider block leading-none mt-1">TOOLS LAB SHARING</span>
                 </div>
               </Link>
             </div>
@@ -160,11 +160,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="col-span-1 md:col-span-2">
                     <div className="flex items-center gap-2 mb-6">
                         <University className="h-8 w-8 text-ipb-blue" />
-                        <span className="text-xl font-bold tracking-tight">SIPINJAMPAS</span>
+                        <span className="text-xl font-bold tracking-tight">TLS IPB</span>
                     </div>
                     <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
-                        Sistem Informasi Peminjaman Fasilitas Terintegrasi IPB University.
-                        Mendukung kegiatan akademik dan kemahasiswaan dengan pelayanan prima.
+                        Platform Tools Lab Sharing (TLS) Terintegrasi IPB University.
+                        Mendukung kegiatan akademik, riset, dan kemahasiswaan dengan akses fasilitas yang mudah.
                     </p>
                     <div className="flex gap-4">
                         {/* Social Placeholders */}
@@ -199,7 +199,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
             </div>
             <div className="pt-8 border-t border-slate-800 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-slate-500 text-sm font-medium">
-                <p>&copy; {new Date().getFullYear()} IPB University. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} TLS IPB University. All rights reserved.</p>
                 <div className="flex gap-6 mt-4 md:mt-0">
                     <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                     <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

@@ -1,10 +1,11 @@
-import { Facility, FacilityType } from '../types';
+import { Facility, FacilityType, FacilityStatus } from '../types';
 
 export const FACILITIES: Facility[] = [
   {
     id: 'f1',
     name: 'Graha Widya Wisuda (GWW)',
     type: FacilityType.AUDITORIUM,
+    status: FacilityStatus.AVAILABLE,
     capacity: 3000,
     location: 'Kampus Dramaga',
     description: 'Gedung serbaguna utama untuk wisuda dan acara besar universitas.',
@@ -15,6 +16,7 @@ export const FACILITIES: Facility[] = [
     id: 'f2',
     name: 'Auditorium Toyib Hadiwijaya',
     type: FacilityType.AUDITORIUM,
+    status: FacilityStatus.MAINTENANCE,
     capacity: 400,
     location: 'Fakultas Pertanian, Dramaga',
     description: 'Auditorium medium cocok untuk seminar nasional dan kuliah umum.',
@@ -25,6 +27,7 @@ export const FACILITIES: Facility[] = [
     id: 'f3',
     name: 'RK. U1.01 (Common Class)',
     type: FacilityType.CLASSROOM,
+    status: FacilityStatus.AVAILABLE,
     capacity: 60,
     location: 'Gedung Teaching Lab',
     description: 'Ruang kelas modern dengan fasilitas multimedia lengkap.',
@@ -35,6 +38,7 @@ export const FACILITIES: Facility[] = [
     id: 'f4',
     name: 'Gymnasium IPB',
     type: FacilityType.FIELD,
+    status: FacilityStatus.RENOVATION,
     capacity: 1000,
     location: 'Kampus Dramaga',
     description: 'Gelanggang olahraga indoor untuk basket, voli, dan badminton.',
@@ -45,6 +49,7 @@ export const FACILITIES: Facility[] = [
     id: 'f5',
     name: 'IPB International Convention Center (IICC)',
     type: FacilityType.MEETING_ROOM,
+    status: FacilityStatus.AVAILABLE,
     capacity: 200,
     location: 'Botani Square',
     description: 'Ruang meeting eksklusif di jantung kota Bogor.',
@@ -55,6 +60,7 @@ export const FACILITIES: Facility[] = [
     id: 'f6',
     name: 'Ruang Sidang Senat',
     type: FacilityType.MEETING_ROOM,
+    status: FacilityStatus.AVAILABLE,
     capacity: 50,
     location: 'Gedung Rektorat Andi Hakim Nasoetion',
     description: 'Ruang rapat formal untuk pimpinan universitas.',

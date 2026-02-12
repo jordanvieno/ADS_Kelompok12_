@@ -5,7 +5,7 @@ import { chatWithAssistant } from '../services/geminiService';
 export const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
-    { role: 'model', text: "Halo! Saya Botani, asisten virtual Sipinjampas. Ada yang bisa saya bantu terkait peminjaman fasilitas di IPB?" }
+    { role: 'model', text: "Halo! Saya Botani, asisten virtual TLS IPB. Ada yang bisa saya bantu terkait peminjaman fasilitas atau laboratorium di IPB?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);

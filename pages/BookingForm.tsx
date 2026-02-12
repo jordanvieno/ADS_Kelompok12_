@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Facility } from '../types';
 import { BookingService } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
-import { Upload, AlertCircle, ArrowLeft, Calendar, Clock, FileText, Users, CheckCircle2 } from 'lucide-react';
+import { Upload, AlertCircle, ArrowLeft, Clock, FileText, Users, CheckCircle2, X, File as FileIcon } from 'lucide-react';
+import { DatePicker } from '../components/DatePicker';
+import { TimePicker } from '../components/TimePicker';
 
 export const BookingForm: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const facility = location.state?.facility as Facility;
+  
+  // Ref for hidden file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     eventName: '',
@@ -19,6 +24,8 @@ export const BookingForm: React.FC = () => {
     endTime: '',
     attendees: '' as string | number,
   });
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,9 +50,50 @@ export const BookingForm: React.FC = () => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleDateChange = (date: string) => {
+    setFormData(prev => ({ ...prev, date }));
+  };
+
+  const handleStartTimeChange = (time: string) => {
+    setFormData(prev => ({ ...prev, startTime: time }));
+  };
+
+  const handleEndTimeChange = (time: string) => {
+    setFormData(prev => ({ ...prev, endTime: time }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        
+        // Validation
+        if (file.type !== 'application/pdf') {
+            setError("Hanya format PDF yang diperbolehkan.");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            setError("Ukuran file maksimal 5MB.");
+            return;
+        }
+
+        setError(null);
+        setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    if (!formData.date || !formData.startTime || !formData.endTime) {
+        setError("Harap lengkapi tanggal dan waktu peminjaman.");
+        return;
+    }
+
+    if (!selectedFile) {
+        setError("Wajib mengunggah Surat Pengantar.");
+        return;
+    }
 
     setError(null);
     setIsSubmitting(true);
@@ -58,7 +106,8 @@ export const BookingForm: React.FC = () => {
         date: formData.date,
         startTime: formData.startTime,
         endTime: formData.endTime,
-        attendees: formData.attendees
+        attendees: formData.attendees,
+        documentFile: selectedFile
     });
 
     setIsSubmitting(false);
@@ -93,14 +142,14 @@ export const BookingForm: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     
                     {error && (
-                        <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-start border border-red-200 shadow-sm">
+                        <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-start border border-red-200 shadow-sm animate-fade-in">
                             <AlertCircle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
                             <span className="font-bold">{error}</span>
                         </div>
                     )}
 
-                    {/* Section 1: Event Info */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up">
+                    {/* Section 1: Event Info (Highest Z-Index) */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up relative z-30">
                         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
                             <div className="bg-blue-50 p-2 rounded-lg text-ipb-blue border border-blue-100">
                                 <FileText className="h-5 w-5" />
@@ -156,8 +205,8 @@ export const BookingForm: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Section 2: Time */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+                    {/* Section 2: Time (Middle Z-Index to overlap Section 3) */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up relative z-20" style={{animationDelay: '0.1s'}}>
                          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
                             <div className="bg-yellow-50 p-2 rounded-lg text-yellow-600 border border-yellow-100">
                                 <Clock className="h-5 w-5" />
@@ -167,46 +216,35 @@ export const BookingForm: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-bold text-slate-800 mb-2">Tanggal</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
-                                    <input 
-                                        required
-                                        type="date" 
-                                        name="date"
-                                        value={formData.date}
-                                        onChange={handleChange}
-                                        className="w-full pl-12 rounded-xl border border-slate-300 bg-white text-slate-900 focus:ring-4 focus:ring-ipb-blue/10 focus:border-ipb-blue transition-all py-3 pr-4 font-semibold shadow-sm" 
-                                    />
-                                </div>
+                                <DatePicker 
+                                    label="Tanggal"
+                                    value={formData.date}
+                                    onChange={handleDateChange}
+                                    minDate={new Date().toISOString().split('T')[0]} // Disable past dates
+                                    required
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-800 mb-2">Jam Mulai</label>
-                                <input 
-                                    required
-                                    type="time" 
-                                    name="startTime"
+                                <TimePicker 
+                                    label="Jam Mulai"
                                     value={formData.startTime}
-                                    onChange={handleChange}
-                                    className="w-full rounded-xl border border-slate-300 bg-white text-slate-900 focus:ring-4 focus:ring-ipb-blue/10 focus:border-ipb-blue transition-all py-3 px-4 font-semibold text-center shadow-sm" 
+                                    onChange={handleStartTimeChange}
+                                    required
                                 />
                             </div>
                              <div>
-                                <label className="block text-sm font-bold text-slate-800 mb-2">Jam Selesai</label>
-                                <input 
-                                    required
-                                    type="time" 
-                                    name="endTime"
+                                <TimePicker 
+                                    label="Jam Selesai"
                                     value={formData.endTime}
-                                    onChange={handleChange}
-                                    className="w-full rounded-xl border border-slate-300 bg-white text-slate-900 focus:ring-4 focus:ring-ipb-blue/10 focus:border-ipb-blue transition-all py-3 px-4 font-semibold text-center shadow-sm" 
+                                    onChange={handleEndTimeChange}
+                                    required
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 3: Docs */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+                    {/* Section 3: Docs (Lowest Z-Index) */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 animate-fade-in-up relative z-10" style={{animationDelay: '0.2s'}}>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="bg-emerald-50 p-2 rounded-lg text-emerald-600 border border-emerald-100">
                                 <CheckCircle2 className="h-5 w-5" />
@@ -214,14 +252,45 @@ export const BookingForm: React.FC = () => {
                             <h3 className="text-lg font-bold text-slate-900">Kelengkapan Administrasi</h3>
                         </div>
                         
-                        <div className="border-2 border-dashed border-slate-300 hover:border-ipb-blue hover:bg-blue-50/30 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 transition-all cursor-pointer group bg-slate-50">
-                            <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform border border-slate-200">
-                                <Upload className="h-6 w-6 text-ipb-blue" />
+                        <input 
+                            type="file" 
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="application/pdf"
+                            className="hidden"
+                        />
+
+                        {!selectedFile ? (
+                            <div 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed border-slate-300 hover:border-ipb-blue hover:bg-blue-50/30 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 transition-all cursor-pointer group bg-slate-50"
+                            >
+                                <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform border border-slate-200">
+                                    <Upload className="h-6 w-6 text-ipb-blue" />
+                                </div>
+                                <span className="text-sm font-bold text-slate-700 group-hover:text-ipb-blue transition-colors">Unggah Surat Pengantar</span>
+                                <span className="text-xs mt-1 font-medium">Format PDF, Maksimal 5MB</span>
                             </div>
-                            <span className="text-sm font-bold text-slate-700">Unggah Surat Pengantar</span>
-                            <span className="text-xs mt-1 font-medium">Format PDF, Maksimal 2MB</span>
-                            <input type="file" className="hidden" accept=".pdf" />
-                        </div>
+                        ) : (
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between animate-fade-in">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white p-2 rounded-lg border border-blue-100 shadow-sm">
+                                        <FileIcon className="h-6 w-6 text-ipb-blue" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 line-clamp-1 break-all">{selectedFile.name}</p>
+                                        <p className="text-xs text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    type="button"
+                                    onClick={() => setSelectedFile(null)}
+                                    className="p-2 hover:bg-white rounded-full text-slate-400 hover:text-red-500 transition-colors"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-4">

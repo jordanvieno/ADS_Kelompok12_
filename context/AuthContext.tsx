@@ -8,7 +8,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     // Check localStorage on load to persist login
-    const storedUser = localStorage.getItem('sipinjampas_user');
+    const storedUser = localStorage.getItem('tls_ipb_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -16,17 +16,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('sipinjampas_user', JSON.stringify(userData));
+    localStorage.setItem('tls_ipb_user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('sipinjampas_user');
+    localStorage.removeItem('tls_ipb_user');
   };
 
   const updateUser = (updatedUserData: User) => {
     setUser(updatedUserData);
-    localStorage.setItem('sipinjampas_user', JSON.stringify(updatedUserData));
+    localStorage.setItem('tls_ipb_user', JSON.stringify(updatedUserData));
   };
 
   return (

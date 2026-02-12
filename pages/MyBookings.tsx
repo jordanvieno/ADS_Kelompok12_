@@ -3,7 +3,7 @@ import { BookingService } from '../services/bookingService';
 import { Booking, BookingStatus, Facility } from '../types';
 import { FACILITIES } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
-import { Clock, CheckCircle, XCircle, Calendar, MapPin, Loader2, Hourglass, TrendingUp, User } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Calendar, MapPin, Loader2, Hourglass, TrendingUp, User, FileSearch } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export const MyBookings: React.FC = () => {
@@ -59,6 +59,7 @@ export const MyBookings: React.FC = () => {
     switch(status) {
         case BookingStatus.APPROVED: return "bg-green-100 text-green-700";
         case BookingStatus.REJECTED: return "bg-red-100 text-red-700";
+        case BookingStatus.IN_REVIEW: return "bg-indigo-100 text-indigo-700";
         case BookingStatus.PENDING: return "bg-ipb-accent/20 text-yellow-800";
         default: return "bg-slate-100 text-slate-700";
     }
@@ -68,6 +69,7 @@ export const MyBookings: React.FC = () => {
     switch(status) {
         case BookingStatus.APPROVED: return <CheckCircle className="h-4 w-4 mr-1.5"/>;
         case BookingStatus.REJECTED: return <XCircle className="h-4 w-4 mr-1.5"/>;
+        case BookingStatus.IN_REVIEW: return <FileSearch className="h-4 w-4 mr-1.5 animate-pulse"/>;
         case BookingStatus.PENDING: return <Hourglass className="h-4 w-4 mr-1.5 animate-pulse"/>;
         default: return <Clock className="h-4 w-4 mr-1.5"/>;
     }
@@ -151,6 +153,14 @@ export const MyBookings: React.FC = () => {
                                         <span className="text-lg font-bold text-ipb-blue">#{booking.queuePosition}</span>
                                     </div>
                                 </div>
+                            </div>
+                        )}
+                        
+                        {/* In Review Message */}
+                        {booking.status === BookingStatus.IN_REVIEW && (
+                            <div className="bg-indigo-50 border-b border-indigo-100 px-6 py-3 flex items-center gap-2 text-indigo-700">
+                                <FileSearch className="h-5 w-5" />
+                                <span className="font-semibold text-sm">Admin sedang meninjau dokumen dan ketersediaan fasilitas. Mohon tunggu.</span>
                             </div>
                         )}
 

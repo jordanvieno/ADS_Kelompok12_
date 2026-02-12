@@ -36,6 +36,16 @@ let bookingsStore: Booking[] = [
   }
 ];
 
+// Helper to convert File to Base64 (Simulating Cloud Upload)
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
 // --- DOMAIN LAYER ---
 // Encapsulates business rules, validation, and transformations
 class BookingDomain {
@@ -61,6 +71,11 @@ class BookingDomain {
     if (startDateTime < new Date()) {
         return { valid: false, error: "Tidak dapat meminjam untuk waktu yang sudah lewat." };
     }
+
+    // Optional: Validate Document Presence
+    // if (!dto.documentFile) {
+    //    return { valid: false, error: "Wajib mengunggah Surat Pengantar." };
+    // }
 
     return { 
         valid: true, 
@@ -122,10 +137,21 @@ export class BookingService {
       return { success: false, error: "Fasilitas sudah dipesan pada jam tersebut." };
     }
 
-    // 3. Data Retrieval (Infrastructure concern)
+    // 3. Process File Upload (Simulation)
+    let documentUrl = undefined;
+    if (dto.documentFile) {
+        try {
+            documentUrl = await fileToBase64(dto.documentFile);
+        } catch (e) {
+            console.error("File upload failed", e);
+            return { success: false, error: "Gagal mengunggah dokumen." };
+        }
+    }
+
+    // 4. Data Retrieval (Infrastructure concern)
     const user = AuthService.getUserById(dto.userId);
 
-    // 4. Object Construction
+    // 5. Object Construction
     const newBooking: Booking = {
       id: Math.random().toString(36).substr(2, 9),
       facilityId: dto.facilityId,
@@ -137,6 +163,7 @@ export class BookingService {
       endTime: endDateTime,
       attendees: attendees,
       status: BookingStatus.PENDING,
+      documentUrl: documentUrl, // Store the uploaded file URL
       createdAt: new Date().toISOString(),
       queuePosition: 0, 
       estimatedConfirmationDate: new Date().toISOString()
@@ -144,7 +171,7 @@ export class BookingService {
 
     bookingsStore.push(newBooking);
     
-    await new Promise(resolve => setTimeout(resolve, 600)); // Simulate DB latency
+    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate DB/Upload latency
 
     return { success: true, data: newBooking };
   }

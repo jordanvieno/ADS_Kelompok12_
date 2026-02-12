@@ -9,8 +9,16 @@ export enum FacilityType {
   MEETING_ROOM = 'Ruang Rapat'
 }
 
+export enum FacilityStatus {
+  AVAILABLE = 'Tersedia',
+  MAINTENANCE = 'Pemeliharaan',
+  RENOVATION = 'Renovasi',
+  CLOSED = 'Ditutup Sementara'
+}
+
 export enum BookingStatus {
   PENDING = 'Menunggu Persetujuan',
+  IN_REVIEW = 'Sedang Direview',
   APPROVED = 'Disetujui',
   REJECTED = 'Ditolak',
   COMPLETED = 'Selesai'
@@ -20,6 +28,7 @@ export interface Facility {
   id: string;
   name: string;
   type: FacilityType;
+  status: FacilityStatus; // New field for operational status
   capacity: number;
   location: string; // e.g., "Kampus Dramaga", "Kampus Baranangsiang"
   description: string;
@@ -65,6 +74,7 @@ export interface BookingRequestDTO {
   startTime: string;  // Raw time string from input
   endTime: string;    // Raw time string from input
   attendees: string | number; // Raw input
+  documentFile?: File; // Added file object
 }
 
 // Service Response Types
