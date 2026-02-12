@@ -75,6 +75,28 @@ export class AuthService {
     return { success: true, data: safeUser };
   }
 
+  static async updateProfile(id: string, updates: Partial<User>): Promise<ServiceResponse<User>> {
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const index = usersStore.findIndex(u => u.id === id);
+    if (index === -1) {
+        return { success: false, error: "Pengguna tidak ditemukan." };
+    }
+
+    // Check if email is being changed and if it already exists elsewhere
+    if (updates.email && updates.email !== usersStore[index].email) {
+        if (usersStore.some(u => u.email === updates.email && u.id !== id)) {
+            return { success: false, error: "Email sudah digunakan oleh pengguna lain." };
+        }
+    }
+
+    // Update user in store (preserve passwordHash)
+    usersStore[index] = { ...usersStore[index], ...updates };
+
+    const { passwordHash, ...safeUser } = usersStore[index];
+    return { success: true, data: safeUser };
+  }
+
   static getUserById(id: string): User | undefined {
     const u = usersStore.find(u => u.id === id);
     if (!u) return undefined;

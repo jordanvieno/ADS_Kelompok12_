@@ -24,8 +24,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('sipinjampas_user');
   };
 
+  const updateUser = (updatedUserData: User) => {
+    setUser(updatedUserData);
+    localStorage.setItem('sipinjampas_user', JSON.stringify(updatedUserData));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

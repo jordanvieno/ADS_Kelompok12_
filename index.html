@@ -5,19 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sipinjampas - IPB Facility Booking</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
             },
             colors: {
               ipb: {
                 blue: '#004e92',
                 dark: '#002d72',
                 accent: '#f59e0b', // Yellow/Gold
+                light: '#e0f2fe',
+              }
+            },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'bounce-slow': 'bounce 3s infinite',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
               }
             }
           }
@@ -27,6 +43,20 @@
     <style>
       body {
         background-color: #f8fafc;
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      /* Sharpen inputs */
+      input, select, textarea {
+        -webkit-appearance: none; 
       }
     </style>
   <script type="importmap">
@@ -41,8 +71,12 @@
   }
 }
 </script>
+<!-- Babel for in-browser compilation -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
   <body>
     <div id="root"></div>
+    <!-- Entry Point -->
+    <script type="text/babel" data-type="module" data-presets="typescript,react" src="./index.tsx"></script>
   </body>
 </html>

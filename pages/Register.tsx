@@ -48,19 +48,19 @@ export const Register: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-            <div className="bg-ipb-blue p-3 rounded-full">
+            <div className="bg-ipb-blue p-3 rounded-xl shadow-lg border border-blue-800">
                 <University className="h-10 w-10 text-white" />
             </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
           Daftar Akun Baru
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">
+        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10 border border-slate-200">
           {error && (
-            <div className="mb-4 bg-red-50 p-4 rounded-md flex items-center gap-2 text-red-700 text-sm">
+            <div className="mb-4 bg-red-50 p-4 rounded-lg flex items-center gap-3 text-red-700 text-sm border border-red-100 font-medium">
                 <AlertCircle className="h-5 w-5" />
                 {error}
             </div>
@@ -68,23 +68,23 @@ export const Register: React.FC = () => {
           
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-700">Nama Lengkap</label>
+              <label htmlFor="name" className="block text-sm font-bold text-slate-700">Nama Lengkap</label>
               <div className="mt-1">
-                <input id="name" name="name" type="text" required value={formData.name} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900" />
+                <input id="name" name="name" type="text" required value={formData.name} onChange={handleChange} className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900 font-medium" />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">Email</label>
+              <label htmlFor="email" className="block text-sm font-bold text-slate-700">Email</label>
               <div className="mt-1">
-                <input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900" />
+                <input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900 font-medium" />
               </div>
             </div>
             
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-slate-700">Kategori</label>
+              <label htmlFor="role" className="block text-sm font-bold text-slate-700">Kategori</label>
               <div className="mt-1">
-                <select id="role" name="role" value={formData.role} onChange={handleChange} className="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900">
+                <select id="role" name="role" value={formData.role} onChange={handleChange} className="block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900 font-medium">
                     <option value="student">Mahasiswa</option>
                     <option value="staff">Tendik / Dosen</option>
                 </select>
@@ -93,17 +93,17 @@ export const Register: React.FC = () => {
 
             {formData.role === 'student' && (
                 <div>
-                    <label htmlFor="nim" className="block text-sm font-medium text-slate-700">NIM</label>
+                    <label htmlFor="nim" className="block text-sm font-bold text-slate-700">NIM</label>
                     <div className="mt-1">
-                        <input id="nim" name="nim" type="text" required value={formData.nim} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900" />
+                        <input id="nim" name="nim" type="text" required value={formData.nim} onChange={handleChange} className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900 font-medium" />
                     </div>
                 </div>
             )}
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">Kata Sandi</label>
+              <label htmlFor="password" className="block text-sm font-bold text-slate-700">Kata Sandi</label>
               <div className="mt-1">
-                <input id="password" name="password" type="password" required value={formData.password} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900" />
+                <input id="password" name="password" type="password" required value={formData.password} onChange={handleChange} className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-ipb-blue focus:border-ipb-blue sm:text-sm bg-white text-slate-900 font-medium" />
               </div>
             </div>
 
@@ -111,7 +111,7 @@ export const Register: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-ipb-blue hover:bg-ipb-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ipb-blue transition-colors disabled:opacity-70"
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-md text-sm font-bold text-white bg-ipb-blue hover:bg-ipb-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ipb-blue transition-all disabled:opacity-70"
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Daftar Sekarang'}
               </button>
@@ -119,7 +119,7 @@ export const Register: React.FC = () => {
           </form>
           
            <div className="mt-6 text-center">
-             <Link to="/login" className="text-sm font-medium text-ipb-blue hover:text-ipb-dark">
+             <Link to="/login" className="text-sm font-bold text-ipb-blue hover:text-ipb-dark hover:underline">
                 Sudah punya akun? Masuk di sini
              </Link>
           </div>

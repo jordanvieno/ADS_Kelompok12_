@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Sparkles, Loader2 } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { FacilityService } from '../services/facilityService';
-import { getFacilityRecommendations } from '../services/geminiService';
 import { FacilityCard } from '../components/FacilityCard';
 import { Facility, FacilityType } from '../types';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -11,141 +10,109 @@ export const FacilityList: React.FC = () => {
   const [filterType, setFilterType] = useState<string>('All');
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [displayedFacilities, setDisplayedFacilities] = useState<Facility[]>([]);
-  const [isAISearching, setIsAISearching] = useState(false);
-  const [aiReasoning, setAiReasoning] = useState<string | null>(null);
+  
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Fetch facilities from service on load
     const loadFacilities = async () => {
         const res = await FacilityService.getAllFacilities();
         if (res.data) {
             setFacilities(res.data);
-            setDisplayedFacilities(res.data);
-            
-            // Handle AI Query if present in navigation state
-            const state = location.state as { aiQuery?: string };
-            if (state?.aiQuery) {
-                setSearch(state.aiQuery);
-                // We need to pass the fetched data to handleAISearch or let it use state
-                handleAISearch(state.aiQuery, res.data);
+            const state = location.state as { searchQuery?: string };
+            if (state?.searchQuery) {
+                setSearch(state.searchQuery);
                 window.history.replaceState({}, document.title);
+            } else {
+                setDisplayedFacilities(res.data);
             }
         }
     };
     loadFacilities();
-  }, []);
+  }, []); 
+
+  useEffect(() => {
+    let result = facilities;
+
+    if (filterType !== 'All') {
+        result = result.filter(f => f.type === filterType);
+    }
+
+    if (search.trim()) {
+        const lowerQuery = search.toLowerCase();
+        result = result.filter(f => 
+            f.name.toLowerCase().includes(lowerQuery) || 
+            f.location.toLowerCase().includes(lowerQuery) ||
+            f.description.toLowerCase().includes(lowerQuery) ||
+            f.features.some(feat => feat.toLowerCase().includes(lowerQuery))
+        );
+    }
+
+    setDisplayedFacilities(result);
+  }, [search, filterType, facilities]);
 
   const handleBooking = (facility: Facility) => {
     navigate('/book', { state: { facility } });
   };
 
-  const handleAISearch = async (queryText?: string, currentFacilities: Facility[] = facilities) => {
-    const text = queryText || search;
-    if (!text.trim()) return;
-
-    setIsAISearching(true);
-    setAiReasoning(null);
-    
-    // Call AI Service
-    const result = await getFacilityRecommendations(text);
-    
-    if (result.recommendedFacilityIds.length > 0) {
-      const recommended = currentFacilities.filter(f => result.recommendedFacilityIds.includes(f.id));
-      setDisplayedFacilities(recommended);
-      setAiReasoning(result.reasoning);
-    } else {
-      // Fallback to simple name search if AI fails or returns empty
-      const filtered = currentFacilities.filter(f => f.name.toLowerCase().includes(text.toLowerCase()));
-      setDisplayedFacilities(filtered);
-      setAiReasoning("AI tidak menemukan kecocokan spesifik, menampilkan hasil pencarian standar.");
-    }
-    
-    setIsAISearching(false);
-  };
-
-  const handleStandardFilter = (type: string) => {
-    setFilterType(type);
-    setAiReasoning(null);
-    if (type === 'All') {
-        setDisplayedFacilities(facilities);
-    } else {
-        setDisplayedFacilities(facilities.filter(f => f.type === type));
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Daftar Fasilitas</h1>
-        <p className="text-slate-600">Temukan ruangan yang tepat untuk kegiatan akademik maupun non-akademik.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+        <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Eksplorasi Fasilitas</h1>
+            <p className="text-slate-600 font-medium">Temukan ruangan yang sempurna untuk kebutuhan kegiatan Anda.</p>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8 sticky top-20 z-30">
-        <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
+      <div className="bg-white p-3 rounded-2xl shadow-lg border border-slate-200 mb-10 sticky top-24 z-30 transition-shadow">
+        <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex-1 relative group">
                 <input 
                     type="text" 
-                    placeholder="Cari (contoh: 'Ruangan untuk seminar 100 orang di Dramaga')"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-ipb-blue/20 focus:border-ipb-blue transition-all"
+                    placeholder="Cari nama gedung, lokasi..."
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl focus:ring-4 focus:ring-ipb-blue/10 focus:border-ipb-blue transition-all font-semibold text-slate-800 placeholder-slate-400 shadow-sm"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
                 />
-                <Search className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <button 
-                    onClick={() => handleAISearch()}
-                    disabled={isAISearching}
-                    className="absolute right-2 top-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-1.5 rounded-md transition-colors flex items-center gap-1 text-xs font-semibold"
-                >
-                   {isAISearching ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4" />}
-                   AI Search
-                </button>
+                <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400 group-focus-within:text-ipb-blue transition-colors" />
             </div>
-            <div className="flex overflow-x-auto gap-2 pb-1 md:pb-0 no-scrollbar">
-                 <button 
-                    onClick={() => handleStandardFilter('All')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filterType === 'All' ? 'bg-ipb-blue text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                 >
-                    Semua
-                 </button>
-                 {Object.values(FacilityType).map(type => (
+            
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 px-2 no-scrollbar border-l border-slate-200 pl-4">
+                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 hidden md:block">Filter:</span>
+                 {['All', ...Object.values(FacilityType)].map(type => (
                      <button 
                         key={type}
-                        onClick={() => handleStandardFilter(type)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filterType === type ? 'bg-ipb-blue text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        onClick={() => setFilterType(type)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-200 border ${
+                            filterType === type 
+                            ? 'bg-ipb-blue text-white border-ipb-blue shadow-md' 
+                            : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 hover:border-slate-300'
+                        }`}
                      >
-                        {type}
+                        {type === 'All' ? 'Semua Tipe' : type}
                      </button>
                  ))}
             </div>
         </div>
-        {aiReasoning && (
-            <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-lg flex gap-3 items-start animate-fade-in">
-                <Sparkles className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-                <div>
-                    <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Rekomendasi AI</span>
-                    <p className="text-sm text-indigo-900 mt-1">{aiReasoning}</p>
-                </div>
-            </div>
-        )}
       </div>
 
       {/* Grid */}
       {displayedFacilities.length === 0 ? (
-          <div className="text-center py-20">
-              <div className="bg-slate-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-10 w-10 text-slate-400" />
+          <div className="text-center py-32 bg-slate-50 rounded-3xl border border-dashed border-slate-300">
+              <div className="bg-white rounded-full h-24 w-24 flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
+                  <Search className="h-10 w-10 text-slate-300" />
               </div>
-              <h3 className="text-lg font-medium text-slate-900">Tidak ada fasilitas ditemukan</h3>
-              <p className="text-slate-500">Coba ubah kata kunci pencarian atau filter.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Fasilitas tidak ditemukan</h3>
+              <p className="text-slate-600 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan fasilitas dengan kata kunci tersebut. Silakan coba kata kunci lain.</p>
+              <button onClick={() => {setSearch(''); setFilterType('All')}} className="mt-6 text-ipb-blue font-bold hover:underline">Reset Pencarian</button>
           </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedFacilities.map(facility => (
-                <FacilityCard key={facility.id} facility={facility} onBook={handleBooking} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayedFacilities.map((facility, idx) => (
+                <div key={facility.id} className="animate-fade-in-up" style={{animationDelay: `${idx * 0.1}s`}}>
+                    <FacilityCard facility={facility} onBook={handleBooking} />
+                </div>
             ))}
         </div>
       )}

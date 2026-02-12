@@ -11,6 +11,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FacilityEditor } from './pages/FacilityEditor';
+import { UserProfile } from './pages/UserProfile';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<UserProfile />} />
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/facility/edit/:id" element={<FacilityEditor />} />
