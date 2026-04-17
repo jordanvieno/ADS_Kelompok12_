@@ -37,7 +37,7 @@ for user_data in users_to_create:
     # Cek apakah email sudah terdaftar
     existing = db.query(models.User).filter(models.User.email == user_data["email"]).first()
     if existing:
-        print(f"⚠️  {user_data['role'].value.upper():>7} | {user_data['email']} sudah ada, dilewati.")
+        print(f"[SKIP]  {user_data['role'].value.upper():>7} | {user_data['email']} sudah ada, dilewati.")
         continue
 
     user = models.User(
@@ -50,7 +50,7 @@ for user_data in users_to_create:
     db.add(user)
     db.commit()
     db.refresh(user)
-    print(f"✅ {user_data['role'].value.upper():>7} | {user_data['email']} berhasil dibuat!")
+    print(f"[OK] {user_data['role'].value.upper():>7} | {user_data['email']} berhasil dibuat!")
 
 print("=" * 50)
 print()
