@@ -69,7 +69,7 @@ export const FacilityEditor: React.FC = () => {
          if (imageFile) {
              const uploadRes = await FacilityService.uploadImage(imageFile);
              if (uploadRes.success && uploadRes.data) {
-                 finalImageUrl = "http://localhost:8000" + uploadRes.data.url;
+                 finalImageUrl = uploadRes.data.url;
              } else {
                  setError(uploadRes.error || "Gagal mengupload gambar.");
                  setSaving(false);
@@ -84,7 +84,7 @@ export const FacilityEditor: React.FC = () => {
         if (imageFile) {
              const uploadRes = await FacilityService.uploadImage(imageFile);
              if (uploadRes.success && uploadRes.data) {
-                 finalImageUrl = "http://localhost:8000" + uploadRes.data.url;
+                 finalImageUrl = uploadRes.data.url;
              } else {
                  setError(uploadRes.error || "Gagal mengupload gambar.");
                  setSaving(false);

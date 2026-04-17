@@ -8,3 +8,4 @@ python-multipart==0.0.17
 pydantic[email]==2.10.3
 python-dotenv==1.0.1
 alembic==1.14.0
+cloudinary==1.41.0

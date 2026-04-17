@@ -1,6 +1,8 @@
 import os
 import shutil
 import uuid
+import cloudinary
+import cloudinary.uploader
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
@@ -11,28 +13,29 @@ import schemas
 
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
 
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
-
+# Setup Cloudinary config (akan terload setelah main.py meload dotenv)
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+  api_key = os.getenv('CLOUDINARY_API_KEY'),
+  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+  secure = True
+)
 
 @router.post("/upload-image", status_code=201)
 def upload_facility_image(
     file: UploadFile = File(...),
     _: models.User = Depends(require_admin)
 ):
-    """Upload gambar fasilitas (Admin only)."""
+    """Upload gambar fasilitas (Admin only) ke Cloudinary."""
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File harus berupa gambar")
 
-    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
-
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return {"url": f"/{UPLOAD_DIR}/{filename}"}
+    try:
+        # Upload ke Cloudinary
+        upload_result = cloudinary.uploader.upload(file.file)
+        return {"url": upload_result.get("secure_url")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal mengupload gambar: {str(e)}")
 
 
 @router.get("", response_model=List[schemas.FacilityOut])
