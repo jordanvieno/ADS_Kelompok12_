@@ -2,7 +2,8 @@
 // HTTP API Client — menggantikan Firebase SDK
 // =============================================
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE_URL = RAW_URL.replace(/\/+$/, ''); // strip trailing slash
 
 function getToken(): string | null {
   return localStorage.getItem('auth_token');

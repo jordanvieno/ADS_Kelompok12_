@@ -100,3 +100,21 @@ def root():
 @app.get("/health", tags=["Root"])
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/health/db", tags=["Root"])
+def health_check_db():
+    """Diagnosa koneksi database — untuk debugging deployment."""
+    from database import DATABASE_URL, engine
+    from sqlalchemy import text
+
+    # Mask the password in the URL for safety
+    import re
+    masked_url = re.sub(r'://([^:]+):([^@]+)@', r'://\1:***@', DATABASE_URL)
+
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return {"status": "ok", "database": masked_url}
+    except Exception as e:
+        return {"status": "error", "database": masked_url, "error": str(e)}
